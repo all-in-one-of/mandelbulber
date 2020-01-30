@@ -42,6 +42,7 @@
 #define MANDELBULBER2_SRC_ANIMATION_FLIGHT_HPP_
 
 #include <qmessagebox.h>
+#include <iostream>
 
 #include "algebra.hpp"
 #include "animation_frames.hpp"
@@ -105,6 +106,7 @@ public slots:
 	void slotAnimationStopRequest();
 
 private slots:
+    void expLoc();
 	void slotRecordFlight();
 	void slotContinueRecording();
 	void slotFlightChangeSpeed(double amount);
@@ -197,7 +199,7 @@ extern cFlightAnimation *gFlightAnimation;
 
 class cFligtAnimRenderThread : public QThread
 {
-	Q_OBJECT;
+    Q_OBJECT
 
 public:
 	cFligtAnimRenderThread(QString &settingsText);
@@ -207,6 +209,7 @@ public slots:
 
 private:
 	QString settingsText;
+    QString currentFile;
 
 signals:
 	void renderingFinished();

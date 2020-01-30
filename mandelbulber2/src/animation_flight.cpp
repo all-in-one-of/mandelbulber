@@ -61,6 +61,7 @@
 #include "rendering_configuration.hpp"
 #include "settings.hpp"
 #include "undo.h"
+#include "keyframes.hpp"
 
 #include "qt/dock_animation.h"
 #include "qt/dock_navigation.h"
@@ -107,6 +108,8 @@ cFlightAnimation::cFlightAnimation(cInterface *_interface, cAnimationFrames *_fr
 			SLOT(slotCellDoubleClicked(int, int)));
 		connect(mainInterface->renderedImage, SIGNAL(ShiftModeChanged(bool)), this,
 			SLOT(slotOrthogonalStrafe(bool)));
+
+        connect(ui->exportLocation, SIGNAL(clicked()), this, SLOT(expLoc()));  // Export Values to a file
 
 		// connect renderedImage signals
 		connect(mainInterface->renderedImage, SIGNAL(StrafeChanged(CVector2<double>)), this,
@@ -179,8 +182,112 @@ cFlightAnimation::cFlightAnimation(cInterface *_interface, cAnimationFrames *_fr
 	recordPause = false;
 	orthogonalStrafe = false;
 	negativeFlightSpeed = false;
+    QList<QString> listParms;
 }
 
+//... This is a function designed to export camera values to a file //
+// ---------------------------------------------------------------- //
+// -----------------------------------------------------------------//
+
+void cFlightAnimation::expLoc()   // my test function invoked by a button on animation ui.
+{
+
+    QMessageBox::StandardButton reply = QMessageBox::NoButton;
+    using namespace parameterContainer;
+
+QString fileName;
+QString currentFile;
+cParameterContainer frame = *params;
+
+
+QList<cAnimationFrames::sAnimationFrame> listOfFrames = frames->GetFrames();
+
+
+fileName = "/home/kraken/Downloads/CamLocRot.txt";
+
+    // If we don't have a filename from before, get one.
+    if (currentFile.isEmpty()) {
+        fileName = "/home/kraken/Downloads/CamLocRot.txt";                      // QFileDialog::getSaveFileName(this, "Save");
+        currentFile = fileName;
+    } else {
+        fileName = currentFile;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QFile::Text)) {
+        emit QuestionMessage(
+            "Warning", "Warning Cannot save file: " + file.errorString(), QMessageBox::Yes | QMessageBox::No, &reply);
+        return;
+    }
+
+    const int noOfFrames = listOfFrames.count();
+    double duration = double(noOfFrames) / 24.0;
+
+    QString text = "{\"name\":\"Mandelbulber\",\"width\":1920,\"height\":1080,\"frameRate\":24,\"numFrames\":"+ QString::number(noOfFrames)+
+                            ",\"durationSeconds\":"+ QString::number(duration, 'g', 6) +",\"cameraFrames\":[";
+
+    // it is needed to do it also here, because limits must be set just after loading of settings
+    UpdateLimitsForFrameRange();
+    CVector3 camera ;
+    CVector3 lookAt ;
+
+
+    QString text_target = "\"lookAt\":[";
+
+    for (int i = 0; i < noOfFrames; ++i)
+    {
+        camera = listOfFrames[i].parameters.Get<CVector3>("main_camera");
+        lookAt = listOfFrames[i].parameters.Get<CVector3>("main_target");
+
+        text.append("{\"position\":{\"x\":" + QString::number(camera.x, 'g', 10) + ",\"y\":" +
+                                            QString::number(camera.y, 'g', 10) +",\"z\":" +
+                                            QString::number(camera.z, 'g', 10) +"},");
+
+        camera = listOfFrames[i].parameters.Get<CVector3>("main_camera_top");
+
+        text.append("\"rotation\":{\"x\":" + QString::number(camera.x, 'g', 10) + ",\"y\":" +
+                                            QString::number(camera.y, 'g', 10) +",\"z\":" +
+                                            QString::number(camera.z, 'g', 10) +"}},");
+
+        camera = listOfFrames[i].parameters.Get<CVector3>("main_target");
+
+        text_target.append("{\"position\":{\"x\":" + QString::number(lookAt.x, 'g', 10) + ",\"y\":" +
+                                            QString::number(lookAt.y, 'g', 10) +",\"z\":" +
+                                            QString::number(lookAt.z, 'g', 10) +"}," +
+                                            "\"rotation\":{\"x\":0,\"y\":0,\"z\":0}," +
+                                            "\"name\":\"Target\",\"visible\":true},");
+
+        /**text_target.append("{\"position\":{\"x\":" + QString::number(camera.x, 'g', 10) + ",\"y\":" +
+                                            QString::number(camera.y, 'g', 10) +",\"z\":" +
+                                            QString::number(camera.z, 'g', 10) +"}},");
+        **/
+
+
+    }
+
+
+    text_target.chop(1);
+    text_target.append("]}");
+    text.chop(1);
+    text.append("],");
+
+    /**int countOfParams = listOfFrames[0].parameters.GetListOfParameters().count();
+    for(int i = 0 ; i < countOfParams; i++) {
+        text.append("\n"+ listOfFrames[0].parameters.GetListOfParameters()[i]);
+    }
+    **/
+
+    QTextStream out(&file);
+
+    out << text + text_target + "\n";
+    file.close();
+
+    emit QuestionMessage(
+        "Cool Beans", "File Written: " + fileName, QMessageBox::Yes | QMessageBox::No, &reply);
+    }
+
+// -----------------------------------//
+// -----------------------------------//
 void cFlightAnimation::slotRecordFlight()
 {
 	if (frames)
@@ -1119,7 +1226,8 @@ bool cFlightAnimation::RenderFlight(bool *stopRequest)
 			}
 
 			gApplication->processEvents();
-		}
+
+        } // end loop
 
 		emit updateProgressAndStatus(QObject::tr("Animation finished"), progressText.getText(1.0), 1.0,
 			cProgressText::progress_IMAGE);
@@ -1700,3 +1808,5 @@ void cFligtAnimRenderThread::startAnimationRender()
 	gFlightAnimation->RenderFlight(&gMainInterface->stopRequest);
 	emit renderingFinished();
 }
+
+

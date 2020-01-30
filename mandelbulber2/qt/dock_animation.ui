@@ -212,6 +212,13 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="exportLocation">
+             <property name="text">
+              <string>exp Loc</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
@@ -224,8 +231,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>473</width>
-              <height>407</height>
+              <width>505</width>
+              <height>405</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_79">
@@ -644,7 +651,7 @@
             </sizepolicy>
            </property>
            <attribute name="verticalHeaderDefaultSectionSize">
-            <number>20</number>
+            <number>21</number>
            </attribute>
           </widget>
          </item>
@@ -905,8 +912,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>404</width>
-              <height>631</height>
+              <width>315</width>
+              <height>706</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_92">
@@ -1409,7 +1416,7 @@ keyframes</string>
           </sizepolicy>
          </property>
          <attribute name="verticalHeaderDefaultSectionSize">
-          <number>20</number>
+          <number>21</number>
          </attribute>
         </widget>
        </item>

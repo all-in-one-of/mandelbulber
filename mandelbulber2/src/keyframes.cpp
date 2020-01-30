@@ -38,6 +38,9 @@
  */
 
 #include "keyframes.hpp"
+#include <iostream>
+#include <fstream>
+using namespace std;
 
 cKeyframes *gKeyframes = nullptr;
 
@@ -90,7 +93,7 @@ cAnimationFrames::sAnimationFrame cKeyframes::GetInterpolatedFrame(
 
 	sAnimationFrame interpolated;
 
-	for (int i = 0; i < listOfParameters.size(); i++)
+    for (int i = 0; i < listOfParameters.size(); i++)
 	{
 		QString fullParameterName =
 			listOfParameters[i].containerName + "_" + listOfParameters[i].parameterName;
@@ -100,11 +103,11 @@ cAnimationFrames::sAnimationFrame cKeyframes::GetInterpolatedFrame(
 		{
 			morph.append(new cMorph());
 		}
-		for (int k = qMax(0, keyframe - 2); k <= qMin(frames.size() - 1, keyframe + 3); k++)
+        for (int k = qMax(0, keyframe - 2); k <= qMin(frames.size() - 1, keyframe + 3); k++)  // padding array for start and end keyframes
 		{
 			if (morph[i]->findInMorph(k) == -1)
 			{
-				morph[i]->AddData(k, frames.at(k).parameters.GetAsOneParameter(fullParameterName));
+                morph[i]->AddData(k, frames.at(k).parameters.GetAsOneParameter(fullParameterName)); // get this parameters name
 			}
 		}
 		// interpolate each parameter
@@ -117,7 +120,9 @@ cAnimationFrames::sAnimationFrame cKeyframes::GetInterpolatedFrame(
 			ApplyAudioAnimation(index, oneParameter, listOfParameters[i].parameterName, params);
 		interpolated.parameters.AddParamFromOneParameter(fullParameterName, oneParameter);
 	}
+
 	return interpolated;
+
 }
 
 void cKeyframes::GetInterpolatedFrameAndConsolidate(

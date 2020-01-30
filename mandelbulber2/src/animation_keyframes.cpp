@@ -119,6 +119,8 @@ cKeyframeAnimation::cKeyframeAnimation(cInterface *_interface, cKeyframes *_fram
 		connect(ui->tableWidget_keyframe_animation, SIGNAL(cellClicked(int, int)), this,
 			SLOT(slotCellClicked(int, int)));
 
+
+
 		// connect system tray
 		connect(mainInterface->systemTray, SIGNAL(notifyRenderKeyframes()), this,
 			SLOT(slotRenderKeyframes()));
